@@ -9,6 +9,9 @@
 #include <vector>
 #include <Eigen/Dense>
 
+#include <opencv2/plot.hpp>
+#include <opencv2/highgui.hpp>
+
 #include "kalman.hpp"
 
 int main(int argc, char* argv[]) {
@@ -59,18 +62,43 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd x0(n);
   x0 << measurements[0], 0, -9.81;
 
+  std::vector<double> kf_positions;
+  kf_positions.resize(measurements.size());
+
   // Feed measurements into filter, output estimated states
   double t = 0;
   kf.init(t,x0);
   Eigen::VectorXd y(m);
+  Eigen::VectorXd kf_result(n);
   std::cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << std::endl;
   for(int i = 0; i < measurements.size(); i++) {
     t += dt;
     y << measurements[i];
     kf.update(y);
+    kf_result = kf.state();
     std::cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
-        << ", x_hat[" << i << "] = " << kf.state().transpose() << std::endl;
+        << ", x_hat[" << i << "] = " << kf_result.transpose() << std::endl;
+    kf_positions[i] = kf_result[0];
   }
+
+  // Plot data must be a 1xN or Nx1 matrix.
+  // Plot data type must be double (CV_64F)
+  cv::Mat data( measurements.size(), 1, CV_64F, measurements.data());
+  cv::Mat filter_data( measurements.size(), 1, CV_64F, kf_positions.data());
+
+  cv::Mat plot_result;
+
+  cv::Ptr<cv::plot::Plot2d> plot = cv::plot::Plot2d::create(data);
+  plot->setPlotBackgroundColor( cv::Scalar( 50, 50, 50 ) );
+  plot->setPlotLineColor( cv::Scalar( 50, 50, 255 ) );
+  plot->render( plot_result );
+  // cv::Ptr<cv::plot::Plot2d> plot_filter = cv::plot::Plot2d::create(filter_data);
+  // plot_filter->setPlotBackgroundColor( cv::Scalar( 50, 50, 50 ) );
+  // plot_filter->setPlotLineColor( cv::Scalar( 255, 50, 50 ) );
+  // plot_filter->render( plot_result );
+
+  cv::imshow( "plot", plot_result );
+  cv::waitKey();
 
   return 0;
 }
