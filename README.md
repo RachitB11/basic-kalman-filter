@@ -21,3 +21,10 @@ noisy observations. To run it, use CMake:
 
 Note: You may have to specify the path to your Eigen library in
 `CMakeLists.txt`.
+
+Dependencies
+============
+```
+libgnuplot-iostream-dev
+libeigen3-dev
+```

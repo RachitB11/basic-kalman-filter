@@ -8,11 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <Eigen/Dense>
-
-#include <opencv2/plot.hpp>
-#include <opencv2/highgui.hpp>
-
 #include "kalman.hpp"
+#include "gnuplot-iostream.h"
 
 int main(int argc, char* argv[]) {
 
@@ -62,8 +59,10 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd x0(n);
   x0 << measurements[0], 0, -9.81;
 
-  std::vector<double> kf_positions;
+  std::vector<std::pair<double,double>> kf_positions;
   kf_positions.resize(measurements.size());
+  std::vector<std::pair<double,double>> measurement_positions;
+  measurement_positions.resize(measurements.size());
 
   // Feed measurements into filter, output estimated states
   double t = 0;
@@ -78,27 +77,14 @@ int main(int argc, char* argv[]) {
     kf_result = kf.state();
     std::cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
         << ", x_hat[" << i << "] = " << kf_result.transpose() << std::endl;
-    kf_positions[i] = kf_result[0];
+    kf_positions[i] = std::make_pair(t,kf_result[0]);
+    measurement_positions[i] = std::make_pair(t,measurements[i]);
   }
 
-  // Plot data must be a 1xN or Nx1 matrix.
-  // Plot data type must be double (CV_64F)
-  cv::Mat data( measurements.size(), 1, CV_64F, measurements.data());
-  cv::Mat filter_data( measurements.size(), 1, CV_64F, kf_positions.data());
-
-  cv::Mat plot_result;
-
-  cv::Ptr<cv::plot::Plot2d> plot = cv::plot::Plot2d::create(data);
-  plot->setPlotBackgroundColor( cv::Scalar( 50, 50, 50 ) );
-  plot->setPlotLineColor( cv::Scalar( 50, 50, 255 ) );
-  plot->render( plot_result );
-  // cv::Ptr<cv::plot::Plot2d> plot_filter = cv::plot::Plot2d::create(filter_data);
-  // plot_filter->setPlotBackgroundColor( cv::Scalar( 50, 50, 50 ) );
-  // plot_filter->setPlotLineColor( cv::Scalar( 255, 50, 50 ) );
-  // plot_filter->render( plot_result );
-
-  cv::imshow( "plot", plot_result );
-  cv::waitKey();
+  Gnuplot gp;
+  gp << "plot '-' with lines title 'kalman', '-' with lines title 'measurements'\n";
+  gp.send1d(kf_positions);
+  gp.send1d(measurement_positions);
 
   return 0;
 }
