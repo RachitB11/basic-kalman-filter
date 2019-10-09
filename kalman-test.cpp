@@ -3,6 +3,11 @@
 #include <Eigen/Dense>
 #include "kalman.hpp"
 #include "gnuplot-iostream.h"
+#include <unistd.h>
+
+inline void mysleep(unsigned millis) {
+  usleep(millis * 1000);
+}
 
 int main(int argc, char* argv[]) {
 
@@ -53,9 +58,7 @@ int main(int argc, char* argv[]) {
   x0 << measurements[0], 0, -9.81;
 
   std::vector<std::pair<double,double>> kf_positions;
-  kf_positions.resize(measurements.size());
   std::vector<std::pair<double,double>> measurement_positions;
-  measurement_positions.resize(measurements.size());
 
   // Feed measurements into filter, output estimated states
   double t = 0;
@@ -63,21 +66,29 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd y(m);
   Eigen::VectorXd kf_result(n);
   std::cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << std::endl;
+
+  // Initialize the plot.
+  Gnuplot gp;
+  gp << "set title 'Kalman'\nset yrange [-1:3.5]\nset xrange [0:1.6]\n";
+
   for(int i = 0; i < measurements.size(); i++) {
+    gp.flush();
+
     t += dt;
     y << measurements[i];
     kf.update(y);
     kf_result = kf.state();
     std::cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
         << ", x_hat[" << i << "] = " << kf_result.transpose() << std::endl;
-    kf_positions[i] = std::make_pair(t,kf_result[0]);
-    measurement_positions[i] = std::make_pair(t,measurements[i]);
-  }
+    kf_positions.push_back(std::make_pair(t,kf_result[0]));
+    measurement_positions.push_back(std::make_pair(t,measurements[i]));
 
-  Gnuplot gp;
-  gp << "plot '-' with lines title 'kalman', '-' with lines title 'measurements'\n";
-  gp.send1d(kf_positions);
-  gp.send1d(measurement_positions);
+    gp << "plot '-' with lines title 'kalman', '-' with lines title 'measurements'\n";
+    gp.send1d(kf_positions);
+    gp.send1d(measurement_positions);
+
+    mysleep(100);
+  }
 
   return 0;
 }
