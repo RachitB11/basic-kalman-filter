@@ -28,3 +28,7 @@ Dependencies
 libgnuplot-iostream-dev
 libeigen3-dev
 ```
+
+Kalman Test results
+===================
+![Kalman plot](kalman.png)
