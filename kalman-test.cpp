@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 
   // Feed measurements into filter, output estimated states
   double t = 0;
-  kf.init(t,x0s);
+  kf.init(t,x0);
   Eigen::VectorXd y(m);
   std::cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << std::endl;
   for(int i = 0; i < measurements.size(); i++) {
