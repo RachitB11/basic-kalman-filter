@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize the plot.
   Gnuplot gp;
-  gp << "set title 'Kalman'\nset yrange [-1:3.5]\nset xrange [0:1.6]\n";
+  gp << "set title 'Kalman'\nset yrange [-1:3.5]\nset xrange [0:1.6]\nset xlabel 't'\nset ylabel 'x'\n";
 
   for(int i = 0; i < measurements.size(); i++) {
     gp.flush();
