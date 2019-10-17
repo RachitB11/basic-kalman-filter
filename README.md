@@ -5,6 +5,9 @@ This is a basic Kalman filter implementation in C++ using the
 directly as found in [An Introduction to the Kalman Filter]
 (http://www.cs.unc.edu/~welch/media/pdf/kalman_intro.pdf).
 
+It also generates an animated plot to view the progression of the kalman filter in
+gnuplot.
+
 There is a test program that estimates the motion of a projectile based on
 noisy observations. To run it, use CMake:
 
