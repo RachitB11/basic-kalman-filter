@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   Eigen::MatrixXd P(n, n); // Estimate error covariance
 
   // Discrete LTI projectile motion, measuring position only
-  A << 1, dt, 0, 0, 1, dt, 0, 0, 1;
+  A << 1, dt, dt*dt/2, 0, 1, dt, 0, 0, 1;
   C << 1, 0, 0;
 
   // Reasonable covariance matrices
